@@ -43,3 +43,5 @@ The importer requires UTF-8 CSV with the columns `id,name,region,sector,signal`.
 With Node.js 24, run `npm ci`, `npm run lint`, and `npm test`. The CI workflow also runs integration tests against PostgreSQL, reports coverage, audits dependencies, scans for secrets, and builds both Docker images.
 
 The `loadtest/` directory contains a seed script and a k6 scenario for a local demo environment. See the source scripts for configuration.
+
+CI audits production dependencies separately and logs the full dependency audit. It temporarily accepts [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) only in the full audit while the production audit passes. Remove this exception once an upstream fix is available.

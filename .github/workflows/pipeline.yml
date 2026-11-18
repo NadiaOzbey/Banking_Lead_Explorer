@@ -46,7 +46,13 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run test:integration
-      - run: npm audit --audit-level=moderate
+      - name: Audit dependencies
+        run: |
+          npm audit --omit=dev --audit-level=moderate
+          status=0
+          npm audit --audit-level=moderate --json > "$RUNNER_TEMP/npm-audit.json" || status=$?
+          cat "$RUNNER_TEMP/npm-audit.json"
+          node scripts/check-audit.mjs "$RUNNER_TEMP/npm-audit.json" "$status"
       - name: Build frontend and backend images
         run: |
           docker build --file api.Dockerfile --tag lead_explorer-api:ci .
