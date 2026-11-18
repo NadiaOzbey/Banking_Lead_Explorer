@@ -1,0 +1,4 @@
+id,name,region,sector,signal,city,internal_reference
+SYNTH-001,Northstar Components,North,Manufacturing,review,Hamburg,SYNTH-002
+SYNTH-002,Blue Oak Energy,South,Energy,new,Munich,
+SYNTH-003,Willow Analytics,East,Technology,follow_up,Berlin,

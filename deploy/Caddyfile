@@ -1,0 +1,27 @@
+{
+  skip_install_trust
+}
+
+http://localhost:8080 {
+  redir https://localhost:8443{uri} permanent
+}
+
+https://localhost:8443 {
+  tls internal
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "no-referrer"
+    Content-Security-Policy "default-src 'self'; style-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    -Server
+  }
+  handle /api/* {
+    reverse_proxy api:3000
+  }
+  handle {
+    root * /srv
+    try_files {path} /index.html
+    file_server
+  }
+}

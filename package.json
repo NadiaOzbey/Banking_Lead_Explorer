@@ -1,0 +1,55 @@
+{
+  "name": "lead_explorer-demo",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "lint": "eslint . && tsc --noEmit -p backend && tsc --noEmit -p frontend",
+    "test": "node --experimental-test-coverage --test backend/test/unit.test.ts",
+    "test:integration": "node --env-file-if-exists=.env --experimental-test-coverage --test backend/test/integration.test.ts",
+    "build:api": "tsc -p backend",
+    "build:web": "vite build frontend",
+    "admin": "node --env-file-if-exists=.env backend/admin.ts"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "csv-parse": "^7.0.3",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "multer": "^2.5.0",
+    "pg": "^8.23.1",
+    "pg-hstore": "^2.3.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sequelize": "^6.37.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "eslint": "^9.39.5",
+    "tailwindcss": "^4.3.5",
+    "typescript": "5.9",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    },
+    "sequelize": {
+      "uuid": "11.1.1"
+    }
+  }
+}

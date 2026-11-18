@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.pdf
+*.zip
+*.csv
+!fixtures/synthetic-profiles.csv
+delivery/
