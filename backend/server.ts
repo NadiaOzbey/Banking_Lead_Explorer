@@ -28,6 +28,7 @@ await db.Session.destroy({ where: { expires_at: { [Op.lte]: fn('now') } } });
 
 const app = createApp(db, {
   origin,
+  commit: process.env.RENDER_GIT_COMMIT,
   staticDir: process.env.STATIC_DIR ? resolve(process.env.STATIC_DIR) : undefined,
 });
 const server = app.listen(Number(process.env.PORT ?? '3000'), '0.0.0.0', () => console.log('API ready'));

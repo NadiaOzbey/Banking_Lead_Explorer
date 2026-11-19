@@ -45,3 +45,27 @@ With Node.js 24, run `npm ci`, `npm run lint`, and `npm test`. The CI workflow a
 The `loadtest/` directory contains a seed script and a k6 scenario for a local demo environment. See the source scripts for configuration.
 
 CI audits production dependencies separately and logs the full dependency audit. It temporarily accepts [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) only in the full audit while the production audit passes. Remove this exception once an upstream fix is available.
+
+## Staging and production on Render
+
+Deployment jobs are opt-in. Create GitHub environments named `staging` and `production` and restrict both to the `main` branch. Configure required reviewers for production and enable **Prevent self-review**. Disable administrator bypass if available.
+
+Create two dedicated Render Node web services linked to this repository and two separate PostgreSQL databases. Set both services to use branch `main` with Auto-Deploy off.
+
+| Render setting | Value |
+| --- | --- |
+| Build command | `bash deploy/build.sh` |
+| Start command | `bash deploy/start.sh` |
+| Health check | `/api/health` |
+| `APP_ORIGIN` | HTTPS origin of this service, without a trailing slash |
+| `DATABASE_URL` | Connection string for this service's database |
+| `NODE_VERSION` | `24` |
+| `SKIP_INSTALL_DEPS` | `true` |
+
+To create a demo administrator, optionally set both `ADMIN_EMAIL` and `ADMIN_PASSWORD` directly on the service for its first successful boot. Remove both settings after confirming login. Use synthetic data only.
+
+In each GitHub environment, set the variable `RENDER_SERVICE_ID` to its own `srv-...` ID and the secret `RENDER_API_KEY` to a key authorized to deploy that service. Use a service-scoped key where available. Set repository variables `STAGING_URL` and `PRODUCTION_URL` to the corresponding public HTTPS origins. The database connection strings stay in the respective Render services' environment settings.
+
+Set the repository variable `ENABLE_STAGING` to `true` after configuring staging. A push or merge to `main` then runs verification, deploys that commit, and checks its SHA at `/api/health`. Set `ENABLE_PRODUCTION` to `true` after configuring production and its reviewer rule. Manually run **Lead Explorer CI** from `main`. The workflow checks staging before requesting approval and again after approval, then deploys and smoke-tests the production commit.
+
+Render starts an initial deployment when you create a web service. Leave production APP_ORIGIN unset during creation so the application cannot start. With Auto-Deploy off, add the production environment settings using **Save only**. Then use the approved workflow for the first successful application deployment.

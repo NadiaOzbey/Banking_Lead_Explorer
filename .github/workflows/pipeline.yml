@@ -1,6 +1,7 @@
 name: Lead Explorer CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
@@ -57,3 +58,64 @@ jobs:
         run: |
           docker build --file api.Dockerfile --tag lead_explorer-api:ci .
           docker build --file web.Dockerfile --tag lead_explorer-web:ci .
+
+  staging:
+    name: Deploy staging
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_STAGING == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency: lead-explorer-staging
+    environment: staging
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Deploy the verified commit to staging
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+          DEPLOY_URL: ${{ vars.STAGING_URL }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: bash deploy/render.sh
+
+  staging-check:
+    name: Verify release on staging
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && vars.ENABLE_PRODUCTION == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Confirm this commit is live before requesting approval
+        env:
+          DEPLOY_URL: ${{ vars.STAGING_URL }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: bash deploy/smoke.sh
+
+  production:
+    name: Deploy production
+    needs: staging-check
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && vars.ENABLE_PRODUCTION == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency: lead-explorer-production
+    environment: production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Recheck staging after approval
+        env:
+          DEPLOY_URL: ${{ vars.STAGING_URL }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: bash deploy/smoke.sh
+      - name: Deploy the approved commit to production
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+          DEPLOY_URL: ${{ vars.PRODUCTION_URL }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: bash deploy/render.sh
